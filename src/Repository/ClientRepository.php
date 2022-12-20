@@ -7,6 +7,8 @@ use App\Service\Logger;
 
 class ClientRepository
 {
+    // Usually better to autowire service classes like Logger in the constructor. Keeps data classes and service classes separate
+
     public function getByClientNumber(string $clientNumber, Logger $logger) : ?Client
     {
         // get client from the database
