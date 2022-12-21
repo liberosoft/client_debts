@@ -8,6 +8,7 @@ use App\Repository\AddressRepository;
 use App\Repository\ClientRepository;
 use App\Repository\DebtRepository;
 
+// Maybe rename to ClientDebtHandler or similar. Nouns are better for objects than verbs
 class GetClientDebts
 {
     private ?Client $client;
@@ -26,14 +27,13 @@ class GetClientDebts
 
     private Notification $notification;
 
-
     public function __construct(
         string $clientNumber,
         ClientRepository $clientRepository,
         AddressRepository $addressRepository,
         DebtRepository $debtRepository,
-        ApiResource $apiResource,
-        Logger $logger,
+        ApiResource $apiResource, // Maybe ApiClient is a more accurate name for what this does ApiResource is misleading
+        Logger $logger, // Don't get sidetracked with logging when you are still working out core functionality, it will become a distraction. Add it once everything is working
         Notification $notification
     ) {
         $this->apiResource = $apiResource;
@@ -54,6 +54,12 @@ class GetClientDebts
         // 4. same with debts
         // 5. such way of logging things by passing logger object to repositories is ok or should I log things in this service?
 
+        // Mostly ok because you can save data on relationships if you use something like Doctrine
+        // so the saving of data is all related
+        // Send notification gives the class more than one responsibilty because everything else either retrieves or saves data
+        // You could set up a listener which is dedicated to sending notifications
+
+        // You could return $this from these methods and then chain them
         $this->getClient();
 
         $this->setClientCode();
@@ -80,6 +86,8 @@ class GetClientDebts
     {
         $clientCode = $this->apiResource->getClientCode($this->clientNumber, $this->logger);
 
+        // This would suggest a 404 response. A lot of Http clients can throw an Exception for you in such circumstances,
+        // so you wouldn't need to do it yourself and this could be reduced to 2 lines
         if ($clientCode === null) {
             throw new \Exception('Client with number ' . $this->clientNumber . ' has no client code');
         }
